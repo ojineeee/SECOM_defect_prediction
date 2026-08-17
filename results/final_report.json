@@ -1,0 +1,27 @@
+{
+  "best_imbalance_strategy": "smote",
+  "best_model": "logistic_regression",
+  "held_out_test_metrics": {
+    "recall": 0.381,
+    "precision": 0.0976,
+    "f1": 0.1553,
+    "pr_auc": 0.1515
+  },
+  "top_feature_importances": {
+    "sensor_277": 2.0388,
+    "sensor_576": 1.663,
+    "sensor_415": 1.6567,
+    "sensor_574": 1.5248,
+    "sensor_443": 1.4787,
+    "sensor_541": 1.1044,
+    "sensor_132": 1.0697,
+    "sensor_172": 1.0186,
+    "sensor_577": 1.0031,
+    "sensor_138": 0.9026,
+    "sensor_269": 0.8261,
+    "sensor_428": 0.7871,
+    "sensor_142": 0.7636,
+    "sensor_573": 0.6072,
+    "sensor_477": 0.5487
+  }
+}

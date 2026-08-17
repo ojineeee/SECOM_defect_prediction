@@ -1,0 +1,94 @@
+{
+  "n_samples": 1567,
+  "n_features_raw": 590,
+  "n_fail": 104,
+  "n_pass": 1463,
+  "fail_ratio_pct": 6.64,
+  "cols_missing_over_55pct": 24,
+  "cols_any_missing": 538,
+  "heavy_missing_sensor_index_clusters": [
+    [
+      85
+    ],
+    [
+      109,
+      110,
+      111
+    ],
+    [
+      157,
+      158
+    ],
+    [
+      220
+    ],
+    [
+      244,
+      245,
+      246
+    ],
+    [
+      292,
+      293
+    ],
+    [
+      358
+    ],
+    [
+      382,
+      383,
+      384
+    ],
+    [
+      492
+    ],
+    [
+      516,
+      517,
+      518
+    ],
+    [
+      578,
+      579,
+      580,
+      581
+    ]
+  ],
+  "defect_rate_first_half": 0.0856,
+  "defect_rate_second_half": 0.0472,
+  "rolling50_defect_rate_min_max": [
+    0.0,
+    0.24
+  ],
+  "cols_after_missing_drop": 566,
+  "cols_near_constant_removed": 126,
+  "cols_after_cleaning": 440,
+  "pca_explained_var_ratio": [
+    0.0599,
+    0.039
+  ],
+  "top10_mutual_info_features": {
+    "sensor_577": 0.02886,
+    "sensor_477": 0.02676,
+    "sensor_541": 0.02603,
+    "sensor_573": 0.0249,
+    "sensor_428": 0.02373,
+    "sensor_41": 0.02364,
+    "sensor_33": 0.02304,
+    "sensor_122": 0.023,
+    "sensor_407": 0.02202,
+    "sensor_570": 0.02197
+  },
+  "top10_features_high_corr_pairs": [
+    [
+      "sensor_577",
+      "sensor_573",
+      0.958
+    ],
+    [
+      "sensor_541",
+      "sensor_407",
+      0.912
+    ]
+  ]
+}
