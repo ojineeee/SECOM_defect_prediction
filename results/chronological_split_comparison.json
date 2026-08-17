@@ -1,0 +1,26 @@
+{
+  "train_period": [
+    "2008-07-19 11:55:00",
+    "2008-10-02 19:25:00"
+  ],
+  "test_period": [
+    "2008-10-02 20:54:00",
+    "2008-10-17 06:07:00"
+  ],
+  "train_defect_rate": 0.0694,
+  "test_defect_rate": 0.0541,
+  "test_n_fail": 17,
+  "test_n_total": 314,
+  "chronological_split": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "pr_auc": 0.0837
+  },
+  "random_split_reference": {
+    "recall": 0.381,
+    "precision": 0.098,
+    "f1": 0.155,
+    "pr_auc": 0.152
+  }
+}

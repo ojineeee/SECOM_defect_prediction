@@ -15,5 +15,6 @@ python3 eda.py
 python3 train.py
 python3 anomaly_detection.py
 python3 shap_analysis.py
+python3 chronological_validation.py
 
 echo "Done. See ../results/"
