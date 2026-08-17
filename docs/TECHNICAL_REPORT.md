@@ -158,6 +158,37 @@ Mutual information 상위 10개 피처 중에서도 `sensor_577`↔`sensor_573` 
 상황에서만 대안으로 고려할 만합니다.
 (EllipticEnvelope는 60차원 공분산 추정이 불안정해 결과가 신뢰할 수 없어 비교에서 제외했습니다.)
 
+## 모델 설명력 분석 (SHAP, `src/shap_analysis.py`)
+
+### 방법
+
+- 최종 파이프라인(전처리 → SMOTE → LogisticRegression)에서 전처리 단계만 분리해 60차원 선택
+  피처 공간으로 변환한 뒤, `shap.LinearExplainer(clf, X_train_transformed, feature_perturbation="correlation_dependent")`로 계산.
+  `correlation_dependent` 옵션은 피처 간 독립을 가정하지 않고 실제 공분산을 반영 — 이 데이터셋은
+  EDA에서 이미 다중공선성(`sensor_577`↔`sensor_573` corr 0.958 등)이 확인됐으므로 필수적인 선택.
+- Background/설명 대상 모두 held-out test(314개)에 대해 계산.
+
+### 전역 중요도: 계수 vs SHAP
+
+| 방법 | 상위 15개 중 겹치는 피처 수 |
+|---|---|
+| \|coefficient\| vs SHAP mean\|value\| | **5 / 15** |
+
+SHAP 기준 상위 5개: `sensor_132`(0.405), `sensor_103`(0.324), **`days_since_start`(0.305, 3위)**,
+`sensor_344`(0.294), `sensor_416`(0.247). `days_since_start`는 계수 기준으로는 상위 15위 밖(계수
+절댓값 0.50, 60개 피처 중 하위권)이었으나 SHAP 기준으로는 3위로 크게 상승 — 상관관계를 반영하지
+않는 단순 계수 크기가 이 피처의 실제 기여도를 과소평가하고 있었음을 시사.
+
+### 개별 사례 설명
+
+held-out test 중 실제 Fail이고 모델도 Fail로 정확히 예측한 사례(test index 56, 예측 확률
+97.56%)를 `shap.plots.waterfall`로 분해 (`13_shap_individual_example.png`).
+
+### 재현성 참고
+
+`shap.LinearExplainer`는 근사 없이 정확한 값을 계산하므로(선형모델이므로), 동일 입력에 대해
+결정론적으로 동일한 SHAP 값을 반환합니다.
+
 ## 한계점
 
 - 피처가 익명화되어 있어 도메인 기반 피처 엔지니어링에 한계가 있습니다 (시간 파생변수 정도가 유일하게 시도 가능했던 도메인 무관 파생변수).
@@ -177,9 +208,10 @@ secom-defect-detection/
 │   ├── data.py           # 데이터 로드
 │   ├── eda.py            # EDA + 전처리 + 시각화 + 특이점 탐지
 │   ├── train.py          # 시간피처 검증 + 불균형 처리 비교 + 모델 비교 + 최종 평가
-│   └── anomaly_detection.py  # 비지도 이상탐지 비교
+│   ├── anomaly_detection.py  # 비지도 이상탐지 비교
+│   └── shap_analysis.py  # SHAP 기반 전역/개별 설명력 분석
 ├── results/
-│   ├── figures/          # 01~10 시각화 결과
+│   ├── figures/          # 01~13 시각화 결과
 │   └── *.json, *.csv     # 수치 결과
 ├── requirements.txt
 └── run_all.sh

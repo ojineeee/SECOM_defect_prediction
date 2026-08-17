@@ -1,0 +1,31 @@
+{
+  "n_features_explained": 60,
+  "example_wafer_test_index": 56,
+  "example_wafer_true_label": "Fail",
+  "example_wafer_predicted_proba_fail": 0.9756,
+  "top15_shap_features": {
+    "sensor_132": 0.4049,
+    "sensor_103": 0.3242,
+    "days_since_start": 0.3049,
+    "sensor_344": 0.2941,
+    "sensor_416": 0.2466,
+    "sensor_125": 0.2448,
+    "sensor_133": 0.2293,
+    "sensor_70": 0.224,
+    "sensor_277": 0.2206,
+    "sensor_78": 0.2179,
+    "sensor_428": 0.2165,
+    "sensor_65": 0.2123,
+    "sensor_130": 0.2084,
+    "sensor_415": 0.1804,
+    "sensor_142": 0.1548
+  },
+  "top15_coef_vs_shap_overlap_count": 5,
+  "top15_overlap_features": [
+    "sensor_132",
+    "sensor_142",
+    "sensor_277",
+    "sensor_415",
+    "sensor_428"
+  ]
+}

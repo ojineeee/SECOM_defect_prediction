@@ -5,3 +5,4 @@ imbalanced-learn
 xgboost
 matplotlib
 seaborn
+shap
