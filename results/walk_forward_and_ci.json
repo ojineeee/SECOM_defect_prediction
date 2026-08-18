@@ -1,0 +1,153 @@
+{
+  "random_split": {
+    "point_estimate": {
+      "recall": 0.381,
+      "precision": 0.0976,
+      "f1": 0.1553,
+      "pr_auc": 0.1515
+    },
+    "bootstrap_ci": {
+      "recall": {
+        "point": 0.381,
+        "ci_lower": 0.1667,
+        "ci_upper": 0.5882,
+        "n_bootstrap_used": 2000
+      },
+      "precision": {
+        "point": 0.0976,
+        "ci_lower": 0.037,
+        "ci_upper": 0.1648,
+        "n_bootstrap_used": 2000
+      },
+      "f1": {
+        "point": 0.1553,
+        "ci_lower": 0.0667,
+        "ci_upper": 0.2549,
+        "n_bootstrap_used": 2000
+      },
+      "pr_auc": {
+        "point": 0.1515,
+        "ci_lower": 0.0679,
+        "ci_upper": 0.3316,
+        "n_bootstrap_used": 2000
+      }
+    },
+    "n_test": 314,
+    "n_test_fail": 21
+  },
+  "single_chronological_split": {
+    "point_estimate": {
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "pr_auc": 0.0837
+    },
+    "bootstrap_ci": {
+      "recall": {
+        "point": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n_bootstrap_used": 2000
+      },
+      "precision": {
+        "point": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n_bootstrap_used": 2000
+      },
+      "f1": {
+        "point": 0.0,
+        "ci_lower": 0.0,
+        "ci_upper": 0.0,
+        "n_bootstrap_used": 2000
+      },
+      "pr_auc": {
+        "point": 0.0837,
+        "ci_lower": 0.0448,
+        "ci_upper": 0.1713,
+        "n_bootstrap_used": 2000
+      }
+    },
+    "n_test": 314,
+    "n_test_fail": 17
+  },
+  "walk_forward_folds": [
+    {
+      "fold": 1,
+      "train_period": [
+        "2008-07-19 11:55:00",
+        "2008-08-19 18:30:00"
+      ],
+      "test_period": [
+        "2008-08-19 19:38:00",
+        "2008-09-01 08:18:00"
+      ],
+      "n_train": 315,
+      "n_test": 313,
+      "n_test_fail": 21,
+      "recall": 0.619,
+      "precision": 0.0599,
+      "f1": 0.1092,
+      "pr_auc": 0.0547
+    },
+    {
+      "fold": 2,
+      "train_period": [
+        "2008-07-19 11:55:00",
+        "2008-09-01 08:18:00"
+      ],
+      "test_period": [
+        "2008-09-01 09:06:00",
+        "2008-09-20 06:08:00"
+      ],
+      "n_train": 628,
+      "n_test": 313,
+      "n_test_fail": 11,
+      "recall": 0.1818,
+      "precision": 0.04,
+      "f1": 0.0656,
+      "pr_auc": 0.0603
+    },
+    {
+      "fold": 3,
+      "train_period": [
+        "2008-07-19 11:55:00",
+        "2008-09-20 06:08:00"
+      ],
+      "test_period": [
+        "2008-09-20 07:21:00",
+        "2008-10-02 20:54:00"
+      ],
+      "n_train": 941,
+      "n_test": 313,
+      "n_test_fail": 11,
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "pr_auc": 0.036
+    },
+    {
+      "fold": 4,
+      "train_period": [
+        "2008-07-19 11:55:00",
+        "2008-10-02 20:54:00"
+      ],
+      "test_period": [
+        "2008-10-02 21:32:00",
+        "2008-10-17 06:07:00"
+      ],
+      "n_train": 1254,
+      "n_test": 313,
+      "n_test_fail": 17,
+      "recall": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "pr_auc": 0.0827
+    }
+  ],
+  "walk_forward_summary": {
+    "mean_recall": 0.2002,
+    "mean_pr_auc": 0.0584,
+    "std_recall": 0.2529
+  }
+}
