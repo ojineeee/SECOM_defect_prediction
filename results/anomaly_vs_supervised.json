@@ -1,5 +1,26 @@
 {
-  "unsupervised_anomaly_detection": [
+  "note": "matched_budget_comparison이 공정한 비교(세 모델 모두 동일 경고 예산). default_threshold_reference는 각 모델의 기본 predict()/threshold=0.5를 그대로 쓴 참고용 수치로, 서로 다른 경고량을 비교하는 것이므로 Recall을 직접 비교하면 안 됨.",
+  "matched_budget_comparison": [
+    {
+      "detector": "supervised_logistic_regression",
+      "n_flagged": 16,
+      "recall": 0.143,
+      "precision": 0.188
+    },
+    {
+      "detector": "one_class_svm",
+      "n_flagged": 16,
+      "recall": 0.048,
+      "precision": 0.062
+    },
+    {
+      "detector": "isolation_forest",
+      "n_flagged": 16,
+      "recall": 0.0,
+      "precision": 0.0
+    }
+  ],
+  "one_class_default_threshold_reference": [
     {
       "detector": "isolation_forest",
       "recall": 0.048,
@@ -13,11 +34,10 @@
       "pr_auc": 0.055
     }
   ],
-  "supervised_classification": {
+  "supervised_default_threshold_reference": {
+    "detector": "supervised_logistic_regression",
     "recall": 0.381,
-    "precision": 0.0976,
-    "f1": 0.1553,
-    "pr_auc": 0.1515,
-    "model": "logistic_regression"
+    "precision": 0.098,
+    "pr_auc": 0.152
   }
 }

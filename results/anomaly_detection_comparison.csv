@@ -1,3 +1,4 @@
-detector,recall,precision,pr_auc
-isolation_forest,0.048,0.048,0.057
-one_class_svm,0.048,0.024,0.055
+detector,n_flagged,recall,precision
+supervised_logistic_regression,16,0.143,0.188
+one_class_svm,16,0.048,0.062
+isolation_forest,16,0.0,0.0
