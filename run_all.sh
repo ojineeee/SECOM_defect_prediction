@@ -17,5 +17,6 @@ python3 anomaly_detection.py
 python3 shap_analysis.py
 python3 chronological_validation.py
 python3 walk_forward_validation.py
+python3 walk_forward_model_selection.py
 
 echo "Done. See ../results/"

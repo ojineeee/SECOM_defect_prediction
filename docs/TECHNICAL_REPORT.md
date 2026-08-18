@@ -275,6 +275,32 @@ fold 1처럼 학습 표본이 작은 초기 구간에서는 `SimpleImputer(strat
 scikit-learn은 이런 컬럼을 0으로 대체해 학습을 계속하므로 파이프라인이 깨지지는 않지만, 가장
 작은 fold의 해당 컬럼 값은 신뢰도가 낮다는 점을 감안해야 한다.
 
+## 모델 선택 재검증 (`src/walk_forward_model_selection.py`)
+
+### 동기
+
+`train.py`의 모델 비교(Logistic Regression 선정)는 무작위 분할 5-fold CV로 진행됐다. 위
+walk-forward 검증에서 무작위 분할이 시간적 일반화를 대변하지 못한다는 게 확인된 이상, 모델
+선택 기준 자체도 walk-forward로 재검증해야 논리적으로 일관된다.
+
+### 방법
+
+`walk_forward_validation.py`와 동일한 `TimeSeriesSplit(n_splits=4)` fold에서, 4개 모델
+(Logistic Regression, Random Forest, XGBoost, SVM RBF)을 동일 전처리 + SMOTE 조건으로 재학습.
+
+### 결과
+
+| 모델 | 무작위 분할 CV Recall | Walk-forward 평균 Recall |
+|---|---|---|
+| Logistic Regression | 0.387 | **0.2002** |
+| SVM (RBF) | 0.120 | 0.0119 |
+| XGBoost | 0.072 | 0.0357 |
+| Random Forest | 0.036 | 0.0000 |
+
+두 평가 방식 모두에서 순위가 Logistic Regression > (SVM/XGBoost 혼재) > Random Forest로
+일관됨 (`20_model_selection_walk_forward.png`). 절대 수치는 walk-forward가 전반적으로 낮지만,
+**순위 자체는 뒤집히지 않아** 원래의 모델 선택이 평가 방식에 상관없이 견고했음을 확인했다.
+
 ## 한계점
 
 - 피처가 익명화되어 있어 도메인 기반 피처 엔지니어링에 한계가 있습니다 (시간 파생변수 정도가 유일하게 시도 가능했던 도메인 무관 파생변수).
@@ -298,7 +324,8 @@ secom-defect-detection/
 │   ├── anomaly_detection.py  # 비지도 이상탐지 비교
 │   ├── shap_analysis.py  # SHAP 기반 전역/개별 설명력 분석
 │   ├── chronological_validation.py  # 시간순 단일 분할 재검증
-│   └── walk_forward_validation.py  # walk-forward 다중 fold + 부트스트랩 신뢰구간
+│   ├── walk_forward_validation.py  # walk-forward 다중 fold + 부트스트랩 신뢰구간
+│   └── walk_forward_model_selection.py  # walk-forward 기준 모델 선택 재검증
 ├── results/
 │   ├── figures/          # 01~18 시각화 결과
 │   └── *.json, *.csv     # 수치 결과
