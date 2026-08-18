@@ -1,6 +1,7 @@
 {
   "best_imbalance_strategy": "smote",
   "best_model": "logistic_regression",
+  "time_reference_date": "2008-07-19T11:55:00",
   "held_out_test_metrics": {
     "recall": 0.381,
     "precision": 0.0976,
