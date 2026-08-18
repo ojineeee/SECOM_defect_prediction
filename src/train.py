@@ -41,16 +41,25 @@ FIG_DIR.mkdir(parents=True, exist_ok=True)
 RANDOM_STATE = 42
 
 
-def add_time_features(X, ts):
-    """타임스탬프에서 파생변수 생성 (label을 참조하지 않으므로 누수 없음).
+def add_time_features(X, ts, *, reference_date):
+    """학습 구간의 기준일을 사용해 타임스탬프 파생변수를 생성한다.
 
     EDA에서 수집 기간(2008-07-19~10-17, 약 3개월) 동안 불량률이 앞 절반 8.56%
     -> 뒤 절반 4.72%로 뚜렷하게 감소하는 시간 드리프트가 발견되어, 이를 피처화한다.
+
+    ``reference_date``는 반드시 train timestamp에서 정하고 validation/test/추론에도
+    그대로 재사용한다. split마다 ``ts.min()``을 다시 계산하면 동일한 값이 서로 다른
+    날짜를 뜻하게 되어 학습과 추론의 시간축이 달라진다.
     """
     X = X.copy()
-    X["days_since_start"] = (ts - ts.min()).dt.total_seconds() / 86400
-    X["hour_of_day"] = ts.dt.hour
-    X["day_of_week"] = ts.dt.dayofweek
+    ts = pd.to_datetime(ts)
+    reference_date = pd.Timestamp(reference_date)
+    X["days_since_start"] = (
+        (ts - reference_date).dt.total_seconds().to_numpy() / 86400
+    )
+    # numpy 배열로 할당해 train_test_split 뒤에도 pandas index 정렬로 값이 어긋나지 않게 한다.
+    X["hour_of_day"] = ts.dt.hour.to_numpy()
+    X["day_of_week"] = ts.dt.dayofweek.to_numpy()
     return X
 
 
@@ -145,19 +154,18 @@ def compare_models(X_train, y_train, best_imbalance_strategy):
 
 def main():
     X, y, ts = load_raw()
-    TIME_COLS = ["days_since_start", "hour_of_day", "day_of_week"]
-    X_fe = add_time_features(X, ts)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_fe, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
+    X_train_sensors, X_test_sensors, y_train, y_test, ts_train, ts_test = train_test_split(
+        X, y, ts, test_size=0.2, stratify=y, random_state=RANDOM_STATE
     )
-    X_train_raw, X_test_raw = X_train.drop(columns=TIME_COLS), X_test.drop(columns=TIME_COLS)
+    reference_date = ts_train.min()
+    X_train = add_time_features(X_train_sensors, ts_train, reference_date=reference_date)
+    X_test = add_time_features(X_test_sensors, ts_test, reference_date=reference_date)
 
     print("=== 0) 시간 파생변수 효과 검증 (SMOTE+LogisticRegression 고정, 5-fold CV) ===")
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
     scoring = {"recall": "recall", "precision": "precision", "f1": "f1", "pr_auc": "average_precision"}
     time_fe_rows = []
-    for label, data in [("sensors_only", X_train_raw), ("sensors_plus_time_features", X_train)]:
+    for label, data in [("sensors_only", X_train_sensors), ("sensors_plus_time_features", X_train)]:
         steps = build_base_steps() + [
             ("smote", SMOTE(random_state=RANDOM_STATE)),
             ("clf", LogisticRegression(max_iter=2000, random_state=RANDOM_STATE)),
@@ -181,7 +189,7 @@ def main():
     time_fe_df.to_csv(ROOT / "results" / "time_feature_comparison.csv", index=False)
 
     if not use_time_features:
-        X_train, X_test = X_train_raw, X_test_raw
+        X_train, X_test = X_train_sensors, X_test_sensors
 
     print("\n=== 1) 불균형 처리 전략 비교 (RandomForest 고정, 5-fold CV) ===")
     imbalance_df = compare_imbalance_strategies(X_train, y_train)
@@ -293,6 +301,7 @@ def main():
     final_report = {
         "best_imbalance_strategy": best_strategy,
         "best_model": best_model_name,
+        "time_reference_date": reference_date.isoformat(),
         "held_out_test_metrics": test_metrics,
         "top_feature_importances": {k: round(float(v), 4) for k, v in top_features_out.items()},
     }

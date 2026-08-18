@@ -128,8 +128,9 @@ def main():
     print(default_threshold_df.to_string(index=False))
 
     # 지도학습 pipeline: train.py 최종 파이프라인과 동일(시간 파생변수 + SMOTE + LogisticRegression)
-    X_train_fe = add_time_features(X_train, ts_train)
-    X_test_fe = add_time_features(X_test, ts_test)
+    reference_date = ts_train.min()
+    X_train_fe = add_time_features(X_train, ts_train, reference_date=reference_date)
+    X_test_fe = add_time_features(X_test, ts_test, reference_date=reference_date)
     steps = build_base_steps() + [
         ("smote", SMOTE(random_state=RANDOM_STATE)),
         ("clf", LogisticRegression(max_iter=2000, random_state=RANDOM_STATE)),

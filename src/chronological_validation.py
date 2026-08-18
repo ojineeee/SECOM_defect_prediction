@@ -32,14 +32,16 @@ FIG_DIR = ROOT / "results" / "figures"
 
 def main():
     X, y, ts = load_raw()
-    X_fe = add_time_features(X, ts)
 
     # 시간순 정렬 후 앞 80% / 뒤 20%로 분할 (랜덤 아님)
     order = np.argsort(ts.values)
     split_point = int(len(order) * 0.8)
     train_idx, test_idx = order[:split_point], order[split_point:]
 
-    X_train, X_test = X_fe.iloc[train_idx], X_fe.iloc[test_idx]
+    ts_train, ts_test = ts.iloc[train_idx], ts.iloc[test_idx]
+    reference_date = ts_train.min()
+    X_train = add_time_features(X.iloc[train_idx], ts_train, reference_date=reference_date)
+    X_test = add_time_features(X.iloc[test_idx], ts_test, reference_date=reference_date)
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
 
     print(f"train 기간: {ts.iloc[train_idx].min()} ~ {ts.iloc[train_idx].max()}")
