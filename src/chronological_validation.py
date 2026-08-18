@@ -13,9 +13,7 @@ train/test를 나누기 때문에, 실제 운영처럼 "과거로 학습해서 �
 import json
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+from plot_style import plt
 import numpy as np
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline

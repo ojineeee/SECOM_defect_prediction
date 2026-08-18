@@ -9,9 +9,7 @@ Random Forest, XGBoost, SVM)을 동일한 walk-forward fold에서 비교한다.
 import json
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+from plot_style import plt
 import numpy as np
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline

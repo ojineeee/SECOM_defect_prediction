@@ -7,9 +7,7 @@ import json
 from functools import partial
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+from plot_style import plt
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_classif

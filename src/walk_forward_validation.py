@@ -14,9 +14,7 @@ chronological_validation.py는 "앞 80% 학습 / 뒤 20% 평가"라는 단일 �
 import json
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+from plot_style import plt
 import numpy as np
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
