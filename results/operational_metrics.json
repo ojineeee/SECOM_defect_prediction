@@ -1,0 +1,43 @@
+{
+  "n_test": 314,
+  "n_test_fail": 21,
+  "recall_at_top_pct_flagged": {
+    "top_5pct": {
+      "n_flagged": 16,
+      "recall": 0.1429,
+      "false_alarms_per_1000_wafers": 41.4
+    },
+    "top_10pct": {
+      "n_flagged": 31,
+      "recall": 0.1905,
+      "false_alarms_per_1000_wafers": 86.0
+    },
+    "top_20pct": {
+      "n_flagged": 63,
+      "recall": 0.2857,
+      "false_alarms_per_1000_wafers": 181.5
+    },
+    "top_30pct": {
+      "n_flagged": 94,
+      "recall": 0.4286,
+      "false_alarms_per_1000_wafers": 270.7
+    }
+  },
+  "precision_at_fixed_recall": {
+    "recall_0.3": {
+      "threshold": 0.55,
+      "actual_recall": 0.333,
+      "precision": 0.1
+    },
+    "recall_0.5": {
+      "threshold": 0.25,
+      "actual_recall": 0.619,
+      "precision": 0.078
+    },
+    "recall_0.7": {
+      "threshold": 0.2,
+      "actual_recall": 0.714,
+      "precision": 0.081
+    }
+  }
+}

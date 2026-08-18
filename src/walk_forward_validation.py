@@ -18,6 +18,7 @@ from plot_style import plt
 import numpy as np
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
+from scipy.stats import beta as beta_dist
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import TimeSeriesSplit, train_test_split
@@ -30,6 +31,20 @@ FIG_DIR = ROOT / "results" / "figures"
 
 N_BOOTSTRAP = 2000
 RNG = np.random.default_rng(RANDOM_STATE)
+
+
+def clopper_pearson(k, n, alpha=0.05):
+    """recall = k(검출)/n(실제 불량 수)를 이항 비율로 보고 정확 신뢰구간을 계산.
+
+    부트스트랩 CI는 "이미 확정된 예측 벡터"를 리샘플링하는 것이라, k=0이면
+    구조적으로 [0,0]만 나온다(이 표본에 변동성이 없다는 뜻일 뿐, 미래에도
+    항상 0이라는 뜻은 아니다). Clopper-Pearson은 "관측된 n번 중 k번 성공"을
+    이항분포로 보고 "진짜 성공 확률이 어느 범위에 있을 수 있는가"를 직접
+    묻는, 작은 n에서 더 적절한 질문이다.
+    """
+    lower = 0.0 if k == 0 else beta_dist.ppf(alpha / 2, k, n - k + 1)
+    upper = 1.0 if k == n else beta_dist.ppf(1 - alpha / 2, k + 1, n - k)
+    return round(float(lower), 4), round(float(upper), 4)
 
 
 def make_pipe():
@@ -89,11 +104,25 @@ def evaluate_with_ci(X_train, y_train, X_test, y_test, label):
         ci["pr_auc"] = bootstrap_ci(y_test.values, y_pred, y_proba, average_precision_score, needs_proba=True)
         ci["pr_auc"]["point"] = point["pr_auc"]
 
+    n_fail = int(y_test.sum())
+    k_detected = int(round(point["recall"] * n_fail)) if n_fail > 0 else 0
+    cp_lower, cp_upper = clopper_pearson(k_detected, n_fail) if n_fail > 0 else (None, None)
+
     print(f"\n=== {label} ===")
     for k, v in ci.items():
-        print(f"  {k}: {v['point']}  (95% CI: {v['ci_lower']} ~ {v['ci_upper']}, n={v['n_bootstrap_used']})")
+        print(f"  {k}: {v['point']}  (95% 부트스트랩 CI: {v['ci_lower']} ~ {v['ci_upper']}, n={v['n_bootstrap_used']})")
+    if n_fail > 0:
+        print(f"  recall Clopper-Pearson 95% CI (실제 불량 {n_fail}건 중 {k_detected}건 검출 기준): "
+              f"{cp_lower} ~ {cp_upper}")
 
-    return {"point_estimate": point, "bootstrap_ci": ci, "n_test": int(len(y_test)), "n_test_fail": int(y_test.sum())}
+    return {
+        "point_estimate": point,
+        "bootstrap_ci": ci,
+        "recall_clopper_pearson_ci": {"k_detected": k_detected, "n_fail": n_fail,
+                                        "ci_lower": cp_lower, "ci_upper": cp_upper},
+        "n_test": int(len(y_test)),
+        "n_test_fail": n_fail,
+    }
 
 
 def main():
@@ -134,20 +163,30 @@ def main():
         pipe.fit(X_sorted.iloc[tr], y_tr_fold)
         y_pred = pipe.predict(X_sorted.iloc[te])
         y_proba = pipe.predict_proba(X_sorted.iloc[te])[:, 1]
+        n_fail_fold = int(y_te_fold.sum())
+        recall_fold = round(float(recall_score(y_te_fold, y_pred, zero_division=0)), 4)
+        pr_auc_fold = round(float(average_precision_score(y_te_fold, y_proba)), 4)
+        no_skill_baseline = round(n_fail_fold / len(te), 4)  # PR-AUC의 무작위 기준선 = 양성 비율
+        cp_lo, cp_hi = clopper_pearson(int(round(recall_fold * n_fail_fold)), n_fail_fold)
         fold_metrics = {
             "fold": i,
             "train_period": [str(ts_sorted.iloc[tr].min()), str(ts_sorted.iloc[tr].max())],
             "test_period": [str(ts_sorted.iloc[te].min()), str(ts_sorted.iloc[te].max())],
             "n_train": int(len(tr)), "n_test": int(len(te)),
-            "n_test_fail": int(y_te_fold.sum()),
-            "recall": round(float(recall_score(y_te_fold, y_pred, zero_division=0)), 4),
+            "n_test_fail": n_fail_fold,
+            "recall": recall_fold,
+            "recall_clopper_pearson_ci": [cp_lo, cp_hi],
             "precision": round(float(precision_score(y_te_fold, y_pred, zero_division=0)), 4),
             "f1": round(float(f1_score(y_te_fold, y_pred, zero_division=0)), 4),
-            "pr_auc": round(float(average_precision_score(y_te_fold, y_proba)), 4),
+            "pr_auc": pr_auc_fold,
+            "pr_auc_no_skill_baseline": no_skill_baseline,
+            "pr_auc_below_baseline": pr_auc_fold < no_skill_baseline,
         }
         fold_results.append(fold_metrics)
-        print(f"fold {i}: test={fold_metrics['test_period']}  n_fail={fold_metrics['n_test_fail']}  "
-              f"recall={fold_metrics['recall']}  pr_auc={fold_metrics['pr_auc']}")
+        flag = "  ⚠ PR-AUC가 무작위 기준선보다 낮음(랭킹에 실질적 정보 없음)" if fold_metrics["pr_auc_below_baseline"] else ""
+        print(f"fold {i}: test={fold_metrics['test_period']}  n_fail={n_fail_fold}  "
+              f"recall={recall_fold} (CP CI {cp_lo}~{cp_hi})  pr_auc={pr_auc_fold} "
+              f"(no-skill={no_skill_baseline}){flag}")
 
     results["walk_forward_folds"] = fold_results
     if fold_results:

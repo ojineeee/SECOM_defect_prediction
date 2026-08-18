@@ -1,16 +1,16 @@
 {
   "unsupervised_anomaly_detection": [
     {
-      "detector": "one_class_svm",
-      "recall": 0.095,
-      "precision": 0.059,
-      "pr_auc": 0.07
-    },
-    {
       "detector": "isolation_forest",
       "recall": 0.048,
-      "precision": 0.04,
-      "pr_auc": 0.084
+      "precision": 0.048,
+      "pr_auc": 0.057
+    },
+    {
+      "detector": "one_class_svm",
+      "recall": 0.048,
+      "precision": 0.024,
+      "pr_auc": 0.055
     }
   ],
   "supervised_classification": {
