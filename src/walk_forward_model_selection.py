@@ -38,9 +38,8 @@ def build_models():
 
 def main():
     X, y, ts = load_raw()
-    X_fe = add_time_features(X, ts)
     order = np.argsort(ts.values)
-    X_sorted = X_fe.iloc[order].reset_index(drop=True)
+    X_sorted = X.iloc[order].reset_index(drop=True)
     y_sorted = y.iloc[order].reset_index(drop=True)
     ts_sorted = ts.iloc[order].reset_index(drop=True)
 
@@ -52,14 +51,21 @@ def main():
 
     for fold_i, (tr, te) in enumerate(fold_indices, start=1):
         y_tr, y_te = y_sorted.iloc[tr], y_sorted.iloc[te]
+        reference_date = ts_sorted.iloc[tr].min()
+        X_tr = add_time_features(
+            X_sorted.iloc[tr], ts_sorted.iloc[tr], reference_date=reference_date
+        )
+        X_te = add_time_features(
+            X_sorted.iloc[te], ts_sorted.iloc[te], reference_date=reference_date
+        )
         print(f"\n--- fold {fold_i}: test {ts_sorted.iloc[te].min()} ~ {ts_sorted.iloc[te].max()} "
               f"(n_fail={int(y_te.sum())}) ---")
         for name, clf in build_models().items():
             steps = build_base_steps() + [("smote", SMOTE(random_state=RANDOM_STATE)), ("clf", clf)]
             pipe = ImbPipeline(steps)
-            pipe.fit(X_sorted.iloc[tr], y_tr)
-            y_pred = pipe.predict(X_sorted.iloc[te])
-            y_proba = pipe.predict_proba(X_sorted.iloc[te])[:, 1]
+            pipe.fit(X_tr, y_tr)
+            y_pred = pipe.predict(X_te)
+            y_proba = pipe.predict_proba(X_te)[:, 1]
             metrics = {
                 "fold": fold_i,
                 "recall": round(float(recall_score(y_te, y_pred, zero_division=0)), 4),

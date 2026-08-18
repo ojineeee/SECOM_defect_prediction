@@ -127,28 +127,37 @@ def evaluate_with_ci(X_train, y_train, X_test, y_test, label):
 
 def main():
     X, y, ts = load_raw()
-    X_fe = add_time_features(X, ts)
 
     results = {}
 
     # 1) 기존 랜덤 분할 최종 모델에 신뢰구간 추가
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_fe, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
+    X_train_raw, X_test_raw, y_train, y_test, ts_train, ts_test = train_test_split(
+        X, y, ts, test_size=0.2, stratify=y, random_state=RANDOM_STATE
     )
+    reference_date = ts_train.min()
+    X_train = add_time_features(X_train_raw, ts_train, reference_date=reference_date)
+    X_test = add_time_features(X_test_raw, ts_test, reference_date=reference_date)
     results["random_split"] = evaluate_with_ci(X_train, y_train, X_test, y_test, "랜덤 분할 (기존 최종 모델)")
 
     # 2) 기존 단일 시간순 분할(80/20)에 신뢰구간 추가
     order = np.argsort(ts.values)
     split_point = int(len(order) * 0.8)
     tr_idx, te_idx = order[:split_point], order[split_point:]
+    chronological_reference = ts.iloc[tr_idx].min()
+    X_chronological_train = add_time_features(
+        X.iloc[tr_idx], ts.iloc[tr_idx], reference_date=chronological_reference
+    )
+    X_chronological_test = add_time_features(
+        X.iloc[te_idx], ts.iloc[te_idx], reference_date=chronological_reference
+    )
     results["single_chronological_split"] = evaluate_with_ci(
-        X_fe.iloc[tr_idx], y.iloc[tr_idx], X_fe.iloc[te_idx], y.iloc[te_idx],
+        X_chronological_train, y.iloc[tr_idx], X_chronological_test, y.iloc[te_idx],
         "시간순 단일 분할 (80/20)"
     )
 
     # 3) Walk-forward: TimeSeriesSplit으로 여러 확장 윈도우 fold
     print("\n=== Walk-forward (TimeSeriesSplit, 4 folds) ===")
-    X_sorted = X_fe.iloc[order].reset_index(drop=True)
+    X_sorted = X.iloc[order].reset_index(drop=True)
     y_sorted = y.iloc[order].reset_index(drop=True)
     ts_sorted = ts.iloc[order].reset_index(drop=True)
 
@@ -160,9 +169,16 @@ def main():
         if y_tr_fold.sum() == 0 or y_te_fold.sum() == 0:
             print(f"fold {i}: train 또는 test에 불량이 0건이라 스킵")
             continue
-        pipe.fit(X_sorted.iloc[tr], y_tr_fold)
-        y_pred = pipe.predict(X_sorted.iloc[te])
-        y_proba = pipe.predict_proba(X_sorted.iloc[te])[:, 1]
+        fold_reference = ts_sorted.iloc[tr].min()
+        X_tr_fold = add_time_features(
+            X_sorted.iloc[tr], ts_sorted.iloc[tr], reference_date=fold_reference
+        )
+        X_te_fold = add_time_features(
+            X_sorted.iloc[te], ts_sorted.iloc[te], reference_date=fold_reference
+        )
+        pipe.fit(X_tr_fold, y_tr_fold)
+        y_pred = pipe.predict(X_te_fold)
+        y_proba = pipe.predict_proba(X_te_fold)[:, 1]
         n_fail_fold = int(y_te_fold.sum())
         recall_fold = round(float(recall_score(y_te_fold, y_pred, zero_division=0)), 4)
         pr_auc_fold = round(float(average_precision_score(y_te_fold, y_proba)), 4)

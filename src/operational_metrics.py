@@ -21,10 +21,12 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def main():
     X, y, ts = load_raw()
-    X_fe = add_time_features(X, ts)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_fe, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
+    X_train_raw, X_test_raw, y_train, y_test, ts_train, ts_test = train_test_split(
+        X, y, ts, test_size=0.2, stratify=y, random_state=RANDOM_STATE
     )
+    reference_date = ts_train.min()
+    X_train = add_time_features(X_train_raw, ts_train, reference_date=reference_date)
+    X_test = add_time_features(X_test_raw, ts_test, reference_date=reference_date)
 
     steps = build_base_steps() + [
         ("smote", SMOTE(random_state=RANDOM_STATE)),
